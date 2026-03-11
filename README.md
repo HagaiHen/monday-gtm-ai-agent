@@ -169,7 +169,6 @@ Monto is a B2B fintech that manages accounts receivable workflows. The customer 
 
 ```bash
 cp .env.example .env
-# Fill in OPENAI_API_KEY, MONDAY_API_TOKEN, MONDAY_ACCOUNT_SLUG
 docker compose up --build
 ```
 
