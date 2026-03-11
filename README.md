@@ -75,40 +75,6 @@ The customer receives a branded email containing:
 
 ---
 
-## Orchestrator
-
-**File:** `ai-service/orchestrator.py`
-
-The orchestrator is the central coordinator — it doesn't do any AI work itself, it just wires everything together and manages state in Redis.
-
-**Two responsibilities:**
-
-**1. Handle a chat message (synchronous, called per user message)**
-1. Load session from Redis
-2. If phase is `done` → return "check your email" immediately
-3. Save user message to `history:{session_id}` in Redis
-4. On first message only — fetch company context via Tavily (or scrape fallback), cache in `website_context:{session_id}`
-5. Call Questioner Agent with message, history, session, website context
-6. Save Questioner reply to history
-7. If Questioner signals done → update session phase to `building`, publish `pipeline:start` event to Redis
-8. Return reply to Gateway
-
-**2. Run the background pipeline (async, triggered by `pipeline:start` event)**
-1. Call Researcher Agent → receives `BoardBlueprint`
-2. Call Builder pipeline (Structure → Content → Delivery)
-
-**Redis keys it manages:**
-
-| Key | What it stores |
-|---|---|
-| `session:{id}` | Form data + current phase (`questioning` / `building` / `done`) |
-| `history:{id}` | Full conversation transcript |
-| `website_context:{id}` | Cached company context (Tavily / scrape) |
-| `pipeline:start` channel | Triggers background pipeline |
-| `email:send` channel | Triggers Gateway to send email (published by Delivery Agent) |
-
----
-
 ## Agent Deep Dive
 
 ### 1. Questioner Agent
@@ -172,40 +138,22 @@ Creates a dashboard with 2–3 widgets chosen dynamically based on use case and 
 
 ---
 
-## AI Craftsmanship Highlights
-
-**Company-aware opening:** The Questioner scrapes/searches the customer's company before the first message and is instructed to open with a specific detail from their site — not a generic question. This makes it feel like a real consultant who did their homework.
-
-**Structured extraction:** The Questioner outputs a strict JSON schema when done. The Researcher receives both the parsed summary (explicit fields) and the full conversation transcript — giving the LLM a clean anchor plus full nuance.
-
-**Blueprint validation:** The Researcher output goes through a two-pass validation — deterministic structural fixes first, then an LLM reflection pass if issues remain.
-
-**Execution plans, not free agents:** The Builder sub-agents receive explicit step-by-step instructions in their prompts. This dramatically reduces hallucinations and tool misuse compared to open-ended agent prompts.
-
-**Smart widget selection:** The Delivery Agent doesn't create a fixed set of dashboard widgets — it calls GPT-4o-mini with the board's available column types and the customer's use case, and it picks the 2–3 most relevant widgets. It's instructed to never include both battery and status_pie (they're redundant).
-
-**Context reuse:** Website context fetched for the Questioner is cached in Redis and passed to the Researcher — avoiding duplicate Tavily/scrape calls.
-
-**Consistent pub/sub throughout:** Both async triggers use Redis pub/sub — the pipeline start (`pipeline:start`) and the email delivery (`email:send`). Services are fully decoupled: the AI service never calls the Gateway, and the Gateway never calls the AI service directly. All cross-service communication flows through Redis.
-
----
-
 ## Example Run — Monto
 
 Monto is a B2B fintech that manages accounts receivable workflows. The customer submits: Finance & Banking industry, 18-person team, pain point around losing track of overdue invoices.
 
-The Questioner opens with: *"I can see Monto connects into AP portals like SAP and Coupa — is the bottleneck knowing when an invoice is stuck, or coordinating the follow-up once you know it's overdue?"*
-
-After 4 exchanges, the pipeline builds a **"Monto — AR Collection Pipeline"** board with groups (*New Invoice → Follow-up Needed → Escalated → Collected*), realistic items, and a dashboard with Status Breakdown + Items by Stage widgets.
-
 **Board**
-![Monto board](docs/screenshots/board.png)
+
+<img width="2432" height="1486" alt="image" src="https://github.com/user-attachments/assets/38c306f8-97a2-4928-8dd1-0f420786d433" />
 
 **Dashboard**
-![Monto dashboard](docs/screenshots/dashboard.png)
+
+<img width="2460" height="1088" alt="image" src="https://github.com/user-attachments/assets/8bd058d3-94a1-47f1-a9b6-d4e337173ae8" />
 
 **Email**
-![Summary email](docs/screenshots/email.png)
+
+<img width="208" height="568" alt="image" src="https://github.com/user-attachments/assets/b110674b-f9e3-4f56-8ce7-cf4af07fc94f" />
+
 
 ---
 
