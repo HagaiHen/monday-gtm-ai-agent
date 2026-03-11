@@ -190,6 +190,25 @@ Creates a dashboard with 2–3 widgets chosen dynamically based on use case and 
 
 ---
 
+## Example Run — Monto
+
+Monto is a B2B fintech that manages accounts receivable workflows. The customer submits: Finance & Banking industry, 18-person team, pain point around losing track of overdue invoices.
+
+The Questioner opens with: *"I can see Monto connects into AP portals like SAP and Coupa — is the bottleneck knowing when an invoice is stuck, or coordinating the follow-up once you know it's overdue?"*
+
+After 4 exchanges, the pipeline builds a **"Monto — AR Collection Pipeline"** board with groups (*New Invoice → Follow-up Needed → Escalated → Collected*), realistic items, and a dashboard with Status Breakdown + Items by Stage widgets.
+
+**Board**
+![Monto board](docs/screenshots/board.png)
+
+**Dashboard**
+![Monto dashboard](docs/screenshots/dashboard.png)
+
+**Email**
+![Summary email](docs/screenshots/email.png)
+
+---
+
 ## Setup
 
 ### Prerequisites
@@ -229,6 +248,6 @@ AI_SERVICE_URL=http://ai-service:8000
 ## Assumptions & Shortcuts
 
 - **Payment:** The email includes a link to `monday.com/pricing` and a Calendly link. A real Stripe checkout would require a monday.com account to exist first — that's a production integration step beyond this prototype's scope.
-- **Email:** Dev uses Mailpit (local SMTP mock). Swap `SMTP_HOST/PORT` for any real SMTP provider in production.
+- **Email:** Dev uses Mailpit (local SMTP mock, UI at `http://localhost:8025`) — no real emails are sent. The email template is fully built with board link, dashboard link, pricing recommendation, and purchase CTA. Swap `SMTP_HOST/PORT` for any real SMTP provider in production.
 - **Monday MCP:** Boards are created on my personal monday.com account purely to demonstrate that the end-to-end workflow works. The goal is to showcase the AI's ability to understand a customer's needs and translate them into a real, structured workspace.
 - **Session TTL:** Redis sessions expire after 24 hours.
