@@ -183,12 +183,28 @@ docker compose up --build
 ### Environment Variables
 
 ```
-OPENAI_API_KEY=          # Required
-MONDAY_API_TOKEN=        # Required — monday.com API token
-MONDAY_ACCOUNT_SLUG=     # Required — your monday subdomain (e.g. myteam)
-TAVILY_API_KEY=          # Optional — enriches company research
+# AI — Required
+OPENAI_API_KEY=               # OpenAI API key
+
+# monday.com — Required
+MONDAY_API_TOKEN=             # monday.com API token (from your account settings)
+MONDAY_ACCOUNT_SLUG=          # your subdomain, e.g. "myteam" from myteam.monday.com
+
+# Company research — Optional (recommended)
+TAVILY_API_KEY=               # Tavily API key — enables richer company context for the Questioner
+
+# LangSmith tracing — Optional
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_API_KEY=            # LangSmith API key
+LANGCHAIN_PROJECT=gtm-ai-demo
+
+# Infrastructure (pre-filled for Docker)
 REDIS_URL=redis://redis:6379
 AI_SERVICE_URL=http://ai-service:8000
+
+# Email (pre-filled for dev with Mailpit)
+SMTP_HOST=mailpit
+SMTP_PORT=1025
 ```
 
 ---
